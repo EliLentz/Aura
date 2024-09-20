@@ -16,12 +16,8 @@ class AURA_API AAuraEnemy : public AAuraCharacterBase, public IEnemyInterface
 	GENERATED_BODY()
 	
 public:
-	virtual void Tick(float DeltaTime) override;
+	AAuraEnemy();
 
 	virtual void HighlightActor() override;
 	virtual void UnHighlightActor() override;
-
-private:
-	UPROPERTY()
-	bool bIsHighlighted = false;
 };

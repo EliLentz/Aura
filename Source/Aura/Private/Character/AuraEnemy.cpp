@@ -3,21 +3,24 @@
 
 #include "Character/AuraEnemy.h"
 
-void AAuraEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+#include "Aura/Aura.h"
 
-	if (bIsHighlighted) {
-		DrawDebugSphere(GetWorld(), GetActorLocation(), 50.f, 10, FColor::Cyan);
-	}
+AAuraEnemy::AAuraEnemy()
+{
+	GetMesh()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 }
 
 void AAuraEnemy::HighlightActor()
 {
-	bIsHighlighted = true;
+	GetMesh()->SetRenderCustomDepth(true);
+	GetMesh()->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
+
+	Weapon->SetRenderCustomDepth(true);
+	Weapon->SetCustomDepthStencilValue(CUSTOM_DEPTH_RED);
 }
 
 void AAuraEnemy::UnHighlightActor()
 {
-	bIsHighlighted = false;
+	GetMesh()->SetRenderCustomDepth(false);
+	Weapon->SetRenderCustomDepth(false);
 }
