@@ -12,12 +12,31 @@ void UAttributeMenuWidgetController::BroadcastInitialValues()
 	UAuraAttributeSet* AS = CastChecked<UAuraAttributeSet>(AttributeSet);
 
 	check(AttributeInfo);
-	FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(FAuraGameplayTags::Get().Attributes_Primary_Strength);
-	Info.AttributeValue = AS->GetStrength();
-	AttributeInfoDelegate.Broadcast(Info);
+	for (auto& Tag : AttributeInfo.Get()->AttributeInformation)
+	{
+		BroadcastAttributeInfo(Tag.AttributeTag);
+	}
 }
 
 void UAttributeMenuWidgetController::BindCallbacksToDependencies()
 {
-	
+	UAuraAttributeSet* AS = CastChecked<UAuraAttributeSet>(AttributeSet);
+
+	check(AttributeInfo);
+	for (auto& Tag : AttributeInfo.Get()->AttributeInformation)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(Tag.AttributeGetter).AddLambda(
+			[this, Tag](const FOnAttributeChangeData& Data)
+			{
+				BroadcastAttributeInfo(Tag.AttributeTag);
+			}
+		);
+	}
+}
+
+void UAttributeMenuWidgetController::BroadcastAttributeInfo(const FGameplayTag& Tag) const
+{
+	FAuraAttributeInfo Info = AttributeInfo->FindAttributeInfoForTag(Tag);
+	Info.AttributeValue = Info.AttributeGetter.GetNumericValue(AttributeSet);
+	AttributeInfoDelegate.Broadcast(Info);
 }
