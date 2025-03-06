@@ -5,6 +5,8 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "GameplayTagContainer.h"
+#include "Input/AuraInputComponent.h"
 #include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
@@ -17,7 +19,8 @@ void AAuraPlayerController::BeginPlay()
 	Super::BeginPlay();
 	check(AuraContext); //returns false if AuraContext is not set 
 
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(AuraContext, 0);
 	}
@@ -35,9 +38,12 @@ void AAuraPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
 
-	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
+	UAuraInputComponent* AuraInputComponent = CastChecked<UAuraInputComponent>(InputComponent);
 
-	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	AuraInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
+	AuraInputComponent->BindAbilityActions(InputConfig, this, &AAuraPlayerController::AbilityInputTagPressed,
+	                                       &AAuraPlayerController::AbilityInputTagReleased,
+	                                       &AAuraPlayerController::AbilityInputTagHeld);
 }
 
 void AAuraPlayerController::PlayerTick(float DeltaTime)
@@ -57,7 +63,8 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	if (APawn* ControlledPawn = GetPawn<APawn>()) {
+	if (APawn* ControlledPawn = GetPawn<APawn>())
+	{
 		ControlledPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y, false);
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X, false);
 	}
@@ -87,29 +94,54 @@ void AAuraPlayerController::CursorTrace()
 	*		- Do nothing
 	*/
 
-	if (!LastActor) {
-		if (ThisActor) {
+	if (!LastActor)
+	{
+		if (ThisActor)
+		{
 			//Case B
 			ThisActor->HighlightActor();
 		}
-		else {
+		else
+		{
 			//Case A - both are null, do nothing
 		}
 	}
-	else { //LastActor is valid
-		if (!ThisActor) {
+	else
+	{
+		//LastActor is valid
+		if (!ThisActor)
+		{
 			//Case C
 			LastActor->UnHighlightActor();
 		}
-		else { // both actors are valid
-			if (ThisActor != LastActor) {
+		else
+		{
+			// both actors are valid
+			if (ThisActor != LastActor)
+			{
 				//Case D
 				LastActor->UnHighlightActor();
 				ThisActor->HighlightActor();
 			}
-			else {
+			else
+			{
 				//Case E - actors are the same, do nothing
 			}
 		}
 	}
+}
+
+void AAuraPlayerController::AbilityInputTagPressed(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Red, *InputTag.ToString());
+}
+
+void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::Blue, *InputTag.ToString());
+}
+
+void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
+{
+	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::Green, *InputTag.ToString());
 }
