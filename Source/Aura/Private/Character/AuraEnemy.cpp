@@ -39,7 +39,7 @@ void AAuraEnemy::PossessedBy(AController* NewController)
 	AuraAIController->GetBlackboardComponent()->InitializeBlackboard(*BehaviorTree->GetBlackboardAsset());
 	AuraAIController->RunBehaviorTree(BehaviorTree);
 }
-
+-
 void AAuraEnemy::HighlightActor()
 {
 	GetMesh()->SetRenderCustomDepth(true);
