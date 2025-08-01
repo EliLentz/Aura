@@ -38,22 +38,25 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	void ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGameplayEffect> GameplayEffectClass);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void OnOverlap(AActor* TargetActor);
 
 	UFUNCTION(BlueprintCallable)
 	void OnEndOverlap(AActor* TargetActor);
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Applied Applied")
-	bool bDestroyOnEffectRemoval = false;
-	
+	bool bDestroyOnEffectApplication = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Applied Applied")
+	bool bApplyEffectToEnemies = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Applied")
 	TSubclassOf<UGameplayEffect> InstantGameplayEffectClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Applied Effects")
 	EEffectApplicationPolicy InstantEffectApplicationPolicy = EEffectApplicationPolicy::DoNotApply;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Applied Effects")
 	TSubclassOf<UGameplayEffect> DurationGameplayEffectClass;
 
