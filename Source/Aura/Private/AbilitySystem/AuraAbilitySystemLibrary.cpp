@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AuraAbilityTypes.h"
+#include "AI/NavigationSystemBase.h"
 #include "Game/AuraGameModeBase.h"
 #include "Interaction/CombatInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -142,5 +143,34 @@ void UAuraAbilitySystemLibrary::SetIsCriticalHit(FGameplayEffectContextHandle& E
 		Get()))
 	{
 		AuraEffectContext->SetIsCriticalHit(bInIsCriticalHit);
+	}
+}
+
+void UAuraAbilitySystemLibrary::GetLivePlayersWithinRadius(const UObject* WorldContextObject,
+                                                           TArray<AActor*>& OutOverlappingActors,
+                                                           const TArray<AActor*>& ActorsToIgnore, float Radius,
+                                                           const FVector& SphereOrigin)
+{
+	FCollisionQueryParams SphereParams;
+	SphereParams.AddIgnoredActors(ActorsToIgnore);
+
+	TArray<FOverlapResult> Overlaps;
+	if (const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject,
+	                                                             EGetWorldErrorMode::LogAndReturnNull))
+	{
+		World->OverlapMultiByObjectType(Overlaps, SphereOrigin, FQuat::Identity,
+		                                FCollisionObjectQueryParams(
+			                                FCollisionObjectQueryParams::InitType::AllDynamicObjects),
+		                                FCollisionShape::MakeSphere(Radius), SphereParams);
+
+		for (FOverlapResult& Overlap : Overlaps)
+		{
+			const bool ImplementsCombatInterface = Overlap.GetActor()->Implements<UCombatInterface>();
+			const bool IsAlive = !ICombatInterface::Execute_IsDead(Overlap.GetActor());
+			if (ImplementsCombatInterface && IsAlive)
+			{
+				OutOverlappingActors.AddUnique(ICombatInterface::Execute_GetAvatar(Overlap.GetActor()));
+			}
+		}
 	}
 }
